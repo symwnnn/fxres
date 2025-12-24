@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="description" content="FX Risk Exposure Simulator - Model and analyze currency risk scenarios">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/images/logo-192x192.png">
+    <link rel="apple-touch-icon" href="/images/logo-192x192.png">
+    <title>FX Risk Exposure Simulator (FXRES)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="landing-page">
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>FXRES</span>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="index.html">Home</a></li>
+                    <li><a href="input.html">New Simulation</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="hero">
+            <div class="hero-content">
+                <h1>FX Risk Exposure Simulator</h1>
+                <p class="subtitle">Model currency exposure and risk scenarios with our advanced simulation tool</p>
+                <a href="input.html" class="btn btn-primary">Start Simulation <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="hero-image">
+                <img src="img/fx-dashboard.svg" alt="FX Risk Dashboard" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzI1MDU2NSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkZYIFJpc2sgRGFzaGJvYXJkPC90ZXh0Pjwvc3ZnPg=='">
+            </div>
+        </main>
+
+        <section id="features" class="features">
+            <h2>Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3>Risk Calculation</h3>
+                    <p>Advanced algorithms to calculate risk-adjusted exposure across multiple currencies.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Scenario Analysis</h3>
+                    <p>Simulate various market conditions and their impact on your currency exposure.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <h3>Export Reports</h3>
+                    <p>Generate comprehensive PDF reports with charts and detailed analysis.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-it-works" class="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Input Your Data</h3>
+                    <p>Enter your currency pairs, exposure amounts, and risk parameters.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Run Simulation</h3>
+                    <p>Our engine calculates risk exposure based on your inputs.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Analyze Results</h3>
+                    <p>View detailed reports and visualizations of your risk exposure.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="cta-section">
+            <h2>Ready to Get Started?</h2>
+            <p>Start managing your FX risk exposure today with our powerful simulation tool.</p>
+            <a href="input.html" class="btn btn-primary">Start Simulation Now</a>
+        </section>
+
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>FX Risk Exposure Simulator</h4>
+                    <p>Enterprise-grade currency risk management solution.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="input.html">New Simulation</a></li>
+                        <li><a href="#features">Features</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>support@fxres-enterprise.com</p>
+                    <p>+1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 FXRES Enterprise. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/state.js"></script>
+    <script>
+        // Register service worker for offline capability
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async () => {
+                try {
+                    const registration = await navigator.serviceWorker.register('/sw.js');
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    
+                    // Check for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        console.log('New service worker found in installing state');
+                        
+                        newWorker.addEventListener('statechange', () => {
+                            console.log('Service worker state changed to: ', newWorker.state);
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New update available
+                                console.log('New content is available; please refresh.');
+                                if (confirm('A new version is available. Refresh now?')) {
+                                    window.location.reload();
+                                }
+                            }
+                        });
+                    });
+                    
+                    // Check if the service worker is controlling the page
+                    if (navigator.serviceWorker.controller) {
+                        console.log('Service worker is controlling the page');
+                    } else {
+                        console.log('Service worker is registered but not controlling the page');
+                    }
+                    
+                } catch (error) {
+                    console.error('ServiceWorker registration failed: ', error);
+                }
+            });
+        } else {
+            console.warn('Service workers are not supported in this browser');
+        }
+        
+        // Listen for the beforeinstallprompt event
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            console.log('PWA install prompt available');
+            
+            // Show install button if you have one
+            const installButton = document.getElementById('installButton');
+            if (installButton) {
+                installButton.style.display = 'block';
+                installButton.addEventListener('click', () => {
+                    // Show the install prompt
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        } else {
+                            console.log('User dismissed the install prompt');
+                        }
+                        deferredPrompt = null;
+                    });
+                });
+            }
+        });
+        
+        // Check if the app is running as a PWA
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('PWA was installed');
+        });
+    </script>
+</body>
+</html>

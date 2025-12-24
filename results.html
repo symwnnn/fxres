@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FX Risk Exposure Simulator - Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Results page specific styles */
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+        
+        .results-header h1 {
+            margin-bottom: 0;
+            color: var(--gray-900);
+        }
+        
+        .results-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .results-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .summary-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-color);
+        }
+        
+        .summary-card.warning::before {
+            background: var(--warning-color);
+        }
+        
+        .summary-card.danger::before {
+            background: var(--danger-color);
+        }
+        
+        .summary-card.success::before {
+            background: var(--success-color);
+        }
+        
+        .summary-card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray-500);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+            line-height: 1.2;
+        }
+        
+        .summary-change {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .summary-change.positive {
+            color: var(--success-color);
+        }
+        
+        .summary-change.negative {
+            color: var(--danger-color);
+        }
+        
+        .summary-change i {
+            margin-right: 0.25rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .chart-header h2 {
+            font-size: 1.25rem;
+            color: var(--gray-800);
+            margin-bottom: 0;
+        }
+        
+        .chart-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .exposure-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .exposure-table th,
+        .exposure-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .exposure-table th {
+            background-color: var(--gray-50);
+            color: var(--gray-600);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .exposure-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .exposure-table tbody tr:hover {
+            background-color: var(--gray-50);
+        }
+        
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .risk-low {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+        
+        .risk-medium {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .risk-high {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .risk-critical {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+            }
+        }
+        
+        .recommendations {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        .recommendations h2 {
+            color: var(--gray-800);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .recommendation-item {
+            display: flex;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .recommendation-item:last-child {
+            border-bottom: none;
+        }
+        
+        .recommendation-icon {
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .recommendation-content h3 {
+            font-size: 1rem;
+            color: var(--gray-900);
+            margin-bottom: 0.25rem;
+        }
+        
+        .recommendation-content p {
+            color: var(--gray-600);
+            margin-bottom: 0;
+            font-size: 0.9375rem;
+        }
+        
+        .export-options {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-2xl);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .results-container {
+                padding: var(--spacing-lg) var(--spacing-sm);
+            }
+            
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .results-actions {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .exposure-table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .recommendations {
+                padding: var(--spacing-lg);
+            }
+        }
+    </style>
+</head>
+<body class="results-page">
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>FXRES</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="input.html">New Simulation</a></li>
+                    <li class="active"><a href="#">Results</a></li>
+                    <li><a href="#">Reports</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="results-container">
+            <div class="results-header">
+                <div>
+                    <h1>FX Risk Exposure Analysis</h1>
+                    <p>Simulation completed on <span id="simulationDate"></span></p>
+                </div>
+                <div class="results-actions">
+                    <button id="exportPdf" class="btn btn-outline">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                    <button id="exportExcel" class="btn btn-outline">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </button>
+                    <button id="newSimulation" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> New Simulation
+                    </button>
+                </div>
+            </div>
+            
+            <div class="results-summary">
+                <div class="summary-card">
+                    <h3>Total Exposure</h3>
+                    <div class="summary-value" id="totalExposure">$0.00</div>
+                    <div class="summary-change">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>12% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card warning">
+                    <h3>Value at Risk (95%)</h3>
+                    <div class="summary-value" id="varValue">$0.00</div>
+                    <div class="summary-change negative">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>8% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card success">
+                    <h3>Hedged Exposure</h3>
+                    <div class="summary-value" id="hedgedExposure">$0.00</div>
+                    <div class="summary-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>15% from last month</span>
+                    </div>
+                </div>
+                
+                <div class="summary-card danger">
+                    <h3>Unhedged Exposure</h3>
+                    <div class="summary-value" id="unhedgedExposure">$0.00</div>
+                    <div class="summary-change negative">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5% from last month</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2>Exposure by Currency Pair</h2>
+                    <div class="chart-actions">
+                        <button class="btn-icon" id="exportChartPng">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="exposureChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2>Risk Distribution</h2>
+                    <div class="chart-actions">
+                        <button class="btn-icon" id="exportRiskChartPng">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2>Exposure Details</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="exposure-table">
+                        <thead>
+                            <tr>
+                                <th>Currency Pair</th>
+                                <th>Amount</th>
+                                <th>Base Equivalent</th>
+                                <th>Hedged</th>
+                                <th>Volatility</th>
+                                <th>Risk Level</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="exposureTableBody">
+                            <!-- Rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="recommendations">
+                <h2>Risk Mitigation Recommendations</h2>
+                <ul class="recommendation-list" id="recommendationsList">
+                    <!-- Recommendations will be populated by JavaScript -->
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/state.js"></script>
+    <script src="js/simulation.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date
+            const now = new Date();
+            document.getElementById('simulationDate').textContent = now.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Load simulation data from localStorage
+            const simulationData = JSON.parse(localStorage.getItem('fxresSimulationData')) || {
+                simulationName: 'Q1 2025 FX Exposure',
+                baseCurrency: 'USD',
+                riskAppetite: 3,
+                timeHorizon: 30,
+                includeStressTests: true,
+                exposures: [
+                    {
+                        currencyPair: { from: 'EUR', to: 'USD' },
+                        amount: '1000000',
+                        isHedged: false,
+                        volatilityFactor: 3
+                    },
+                    {
+                        currencyPair: { from: 'GBP', to: 'USD' },
+                        amount: '500000',
+                        isHedged: true,
+                        volatilityFactor: 2
+                    },
+                    {
+                        currencyPair: { from: 'JPY', to: 'USD' },
+                        amount: '20000000',
+                        isHedged: false,
+                        volatilityFactor: 4
+                    }
+                ]
+            };
+            
+            // Calculate simulation results
+            const results = calculateSimulationResults(simulationData);
+            
+            // Update summary cards
+            document.getElementById('totalExposure').textContent = formatCurrency(results.totalExposure, simulationData.baseCurrency);
+            document.getElementById('varValue').textContent = formatCurrency(results.varValue, simulationData.baseCurrency);
+            document.getElementById('hedgedExposure').textContent = formatCurrency(results.hedgedExposure, simulationData.baseCurrency);
+            document.getElementById('unhedgedExposure').textContent = formatCurrency(results.unhedgedExposure, simulationData.baseCurrency);
+            
+            // Initialize charts
+            initExposureChart(results.currencyExposures, simulationData.baseCurrency);
+            initRiskChart(results.riskDistribution);
+            
+            // Populate exposure table
+            populateExposureTable(results.exposureDetails, simulationData.baseCurrency);
+            
+            // Generate recommendations
+            generateRecommendations(results, simulationData.riskAppetite);
+            
+            // Event listeners
+            document.getElementById('exportPdf').addEventListener('click', exportToPdf);
+            document.getElementById('exportExcel').addEventListener('click', exportToExcel);
+            document.getElementById('newSimulation').addEventListener('click', () => {
+                window.location.href = 'input.html';
+            });
+            
+            // Register service worker for offline capability
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.log('ServiceWorker registration successful');
+                        })
+                        .catch(err => {
+                            console.log('ServiceWorker registration failed: ', err);
+                        });
+                });
+            }
+            
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+        
+        // Format currency
+        function formatCurrency(amount, currency) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency || 'USD',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+        
+        // Initialize exposure chart
+        function initExposureChart(currencyExposures, baseCurrency) {
+            const ctx = document.getElementById('exposureChart').getContext('2d');
+            const labels = currencyExposures.map(item => item.currencyPair);
+            const data = currencyExposures.map(item => item.amount);
+            const backgroundColors = generateColors(currencyExposures.length);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Exposure (${baseCurrency})`,
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors.map(color => color.replace('0.9', '1')),
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatCurrency(context.raw, baseCurrency)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value, baseCurrency);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize risk chart
+        function initRiskChart(riskDistribution) {
+            const ctx = document.getElementById('riskChart').getContext('2d');
+            const labels = Object.keys(riskDistribution);
+            const data = Object.values(riskDistribution);
+            const backgroundColors = [
+                'rgba(16, 185, 129, 0.8)',  // Green
+                'rgba(245, 158, 11, 0.8)',  // Yellow
+                'rgba(239, 68, 68, 0.8)',   // Red
+                'rgba(220, 38, 38, 0.8)'    // Dark Red
+            ];
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Populate exposure table
+        function populateExposureTable(exposureDetails, baseCurrency) {
+            const tbody = document.getElementById('exposureTableBody');
+            tbody.innerHTML = '';
+            
+            exposureDetails.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Determine risk level and badge class
+                let riskLevel = '';
+                let riskClass = '';
+                
+                if (item.riskScore <= 2) {
+                    riskLevel = 'Low';
+                    riskClass = 'risk-low';
+                } else if (item.riskScore <= 4) {
+                    riskLevel = 'Medium';
+                    riskClass = 'risk-medium';
+                } else if (item.riskScore <= 7) {
+                    riskLevel = 'High';
+                    riskClass = 'risk-high';
+                } else {
+                    riskLevel = 'Critical';
+                    riskClass = 'risk-critical';
+                }
+                
+                row.innerHTML = `
+                    <td>${item.currencyPair}</td>
+                    <td>${formatCurrency(item.amount, item.currencyPair.split('/')[0])}</td>
+                    <td>${formatCurrency(item.baseEquivalent, baseCurrency)}</td>
+                    <td>${item.isHedged ? 'Yes' : 'No'}</td>
+                    <td>${'★'.repeat(item.volatilityFactor)}${'☆'.repeat(5 - item.volatilityFactor)}</td>
+                    <td><span class="risk-badge ${riskClass}">${riskLevel}</span></td>
+                    <td>
+                        <button class="btn-icon" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-icon" title="Hedge Now">
+                            <i class="fas fa-shield-alt"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Generate recommendations
+        function generateRecommendations(results, riskAppetite) {
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = '';
+            
+            // Sample recommendations based on risk profile
+            const recommendations = [];
+            
+            if (results.unhedgedExposure > 0) {
+                recommendations.push({
+                    icon: 'fas fa-shield-alt',
+                    title: 'Hedge Your Exposure',
+                    description: `Consider hedging ${formatCurrency(results.unhedgedExposure, results.baseCurrency)} of unhedged exposure to reduce risk.`
+                });
+            }
+            
+            if (results.highRiskExposureCount > 0) {
+                recommendations.push({
+                    icon: 'fas fa-exclamation-triangle',
+                    title: 'High-Risk Positions',
+                    description: `You have ${results.highRiskExposureCount} high or critical risk exposures that require attention.`
+                });
+            }
+            
+            if (riskAppetite < 3 && results.varValue > results.totalExposure * 0.1) {
+                recommendations.push({
+                    icon: 'fas fa-balance-scale',
+                    title: 'Risk Appetite Exceeded',
+                    description: 'Your current exposure exceeds your defined risk appetite. Consider reducing positions or increasing hedges.'
+                });
+            }
+            
+            // Add sample recommendations if none were generated
+            if (recommendations.length === 0) {
+                recommendations.push({
+                    icon: 'fas fa-check-circle',
+                    title: 'Well Balanced Portfolio',
+                    description: 'Your FX exposure is well balanced according to your risk profile.'
+                });
+            }
+            
+            // Add general recommendations
+            recommendations.push({
+                icon: 'fas fa-sync-alt',
+                title: 'Regular Monitoring',
+                description: 'Review your FX exposure regularly, especially before major economic announcements.'
+            });
+            
+            // Render recommendations
+            recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.className = 'recommendation-item';
+                li.innerHTML = `
+                    <div class="recommendation-icon">
+                        <i class="${rec.icon}"></i>
+                    </div>
+                    <div class="recommendation-content">
+                        <h3>${rec.title}</h3>
+                        <p>${rec.description}</p>
+                    </div>
+                `;
+                recommendationsList.appendChild(li);
+            });
+        }
+        
+        // Export to PDF
+        function exportToPdf() {
+            const element = document.querySelector('.results-container');
+            const opt = {
+                margin: 10,
+                filename: 'fx-risk-report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Show loading state
+            const exportBtn = document.getElementById('exportPdf');
+            const originalHtml = exportBtn.innerHTML;
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            
+            // Generate PDF
+            html2pdf()
+                .set(opt)
+                .from(element)
+                .save()
+                .then(() => {
+                    // Restore button state
+                    exportBtn.disabled = false;
+                    exportBtn.innerHTML = originalHtml;
+                    
+                    // Show success message
+                    alert('PDF report generated successfully!');
+                });
+        }
+        
+        // Export to Excel
+        function exportToExcel() {
+            // In a real app, this would generate an Excel file
+            alert('Export to Excel functionality would be implemented here.');
+        }
+        
+        // Generate random colors for charts
+        function generateColors(count) {
+            const colors = [];
+            const hueStep = 360 / count;
+            
+            for (let i = 0; i < count; i++) {
+                const hue = (i * hueStep) % 360;
+                colors.push(`hsla(${hue}, 70%, 60%, 0.8)`);
+            }
+            
+            return colors;
+        }
+    </script>
+</body>
+</html>
